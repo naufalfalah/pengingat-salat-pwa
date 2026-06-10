@@ -39,21 +39,29 @@ export function useNotification(prayers, enabledInput) {
       if (delay < 0 || delay > 24 * 60 * 60 * 1_000) continue
 
       timers.push(
-        setTimeout(() => {
-          // Browser notification (jika permission granted)
+        setTimeout(async () => {
           if (Notification.permission === 'granted' && enabled.value) {
+            const payload = {
+              body:     `Sudah masuk waktu sholat ${p.name}`,
+              icon:     '/icons/icon-192.png',
+              badge:    '/icons/icon-192.png',
+              tag:      `salat-${p.key}`,
+              renotify: true,
+              vibrate:  [200, 100, 200],
+            }
             try {
-              new Notification(`Waktu ${p.name}`, {
-                body:     `Sudah masuk waktu sholat ${p.name}`,
-                icon:     '/icons/icon-192.png',
-                tag:      `salat-${p.key}`,
-                renotify: true,
-              })
+              // Gunakan SW registration agar notifikasi muncul saat app di-background
+              const reg = await navigator.serviceWorker?.ready
+              if (reg) {
+                await reg.showNotification(`Waktu ${p.name}`, payload)
+              } else {
+                new Notification(`Waktu ${p.name}`, payload)
+              }
             } catch {
               // Diabaikan — ditangani lewat in-app alert
             }
           }
-          // Fallback in-app alert selalu muncul saat masuk waktu
+          // In-app alert sebagai fallback atau pelengkap
           if (enabled.value) triggerInApp(p)
         }, delay),
       )
