@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { useSettingsStore } from '../stores/settings.js'
+import { ref } from 'vue'
+import { useSettingsStore }              from '../stores/settings.js'
+import { requestNotificationPermission } from '../composables/useNotification.js'
 
 const settings = useSettingsStore()
 
@@ -8,7 +9,8 @@ const selectedMethod = ref(settings.calculationMethod)
 const selectedMadhab = ref(settings.madhab)
 const notifEnabled   = ref(settings.notificationsEnabled)
 
-const saved = ref(false)
+const saved       = ref(false)
+const notifDenied = ref(false)
 
 const METHODS = [
   { value: 'MoonsightingCommittee', label: 'Kemenag RI / Rukyat',    desc: 'Metode default Indonesia' },
@@ -19,17 +21,17 @@ const METHODS = [
 ]
 
 async function saveSettings() {
-  settings.calculationMethod    = selectedMethod.value
-  settings.madhab               = selectedMadhab.value
-  settings.notificationsEnabled = notifEnabled.value
+  settings.calculationMethod = selectedMethod.value
+  settings.madhab            = selectedMadhab.value
 
   if (notifEnabled.value) {
-    const perm = await Notification.requestPermission()
-    if (perm !== 'granted') {
-      notifEnabled.value            = false
-      settings.notificationsEnabled = false
+    const granted = await requestNotificationPermission()
+    if (!granted) {
+      notifEnabled.value = false
+      notifDenied.value  = true
     }
   }
+  settings.notificationsEnabled = notifEnabled.value
 
   await settings.savePreferences()
   saved.value = true
@@ -110,8 +112,11 @@ async function saveSettings() {
             />
           </button>
         </div>
-        <p v-if="notifEnabled" class="text-xs text-slate-400 mt-2 px-1">
+        <p v-if="notifEnabled && !notifDenied" class="text-xs text-slate-400 mt-2 px-1">
           Izin notifikasi akan diminta saat menyimpan pengaturan.
+        </p>
+        <p v-if="notifDenied" class="text-xs text-red-500 mt-2 px-1">
+          Izin notifikasi ditolak. Aktifkan melalui pengaturan browser / perangkat.
         </p>
       </section>
     </div>

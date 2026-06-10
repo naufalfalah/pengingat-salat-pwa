@@ -6,6 +6,31 @@ const settings = useSettingsStore()
 const detecting = ref(false)
 const error     = ref('')
 
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      {
+        headers: { 'Accept-Language': 'id', 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(5_000),
+      },
+    )
+    if (!res.ok) return null
+    const { address } = await res.json()
+    // Ambil nama terkecil yang tersedia, dari kota hingga provinsi
+    return (
+      address.city      ||
+      address.town      ||
+      address.village   ||
+      address.county    ||
+      address.state     ||
+      null
+    )
+  } catch {
+    return null
+  }
+}
+
 async function detectLocation() {
   if (!navigator.geolocation) {
     error.value = 'Browser tidak mendukung geolocation'
@@ -18,8 +43,10 @@ async function detectLocation() {
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10_000, maximumAge: 0 }),
     )
     const { latitude: lat, longitude: lng } = pos.coords
-    // Nama kota diisi koordinat sementara; Phase 3 akan tambahkan reverse geocoding
-    await settings.saveLocation(lat, lng, `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`)
+
+    // Coba reverse geocoding; fallback ke koordinat jika gagal / offline
+    const cityName = (await reverseGeocode(lat, lng)) ?? `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`
+    await settings.saveLocation(lat, lng, cityName)
   } catch (e) {
     error.value = e.code === 1 ? 'Izin lokasi ditolak' : 'Gagal mendeteksi lokasi'
   } finally {

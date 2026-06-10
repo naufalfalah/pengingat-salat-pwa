@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useSettingsStore } from './stores/settings.js'
-import { usePrayerTimes }   from './composables/usePrayerTimes.js'
-import { useQibla }         from './composables/useQibla.js'
+import { useSettingsStore }             from './stores/settings.js'
+import { usePrayerTimes }               from './composables/usePrayerTimes.js'
+import { useQibla }                     from './composables/useQibla.js'
+import { useNotification }              from './composables/useNotification.js'
 
 import LocationDisplay from './components/LocationDisplay.vue'
 import CountdownTimer  from './components/CountdownTimer.vue'
@@ -10,6 +11,7 @@ import PrayerTimes     from './components/PrayerTimes.vue'
 import QiblaCompass    from './components/QiblaCompass.vue'
 import SettingsSheet   from './components/SettingsSheet.vue'
 import InstallPrompt   from './components/InstallPrompt.vue'
+import PrayerAlert     from './components/PrayerAlert.vue'
 
 const settings = useSettingsStore()
 const activeTab = ref('jadwal')
@@ -26,22 +28,27 @@ const { prayers, nextPrayer, nextPrayerTime, currentPrayer } = usePrayerTimes(
 
 const { qiblaAngle, needleRotation, compassGranted, requestCompass, stopListening } = useQibla(lat, lng)
 
+const { activePrayerAlert, dismissAlert } = useNotification(
+  prayers,
+  computed(() => settings.notificationsEnabled),
+)
+
 onMounted(()  => settings.loadFromDB())
 onUnmounted(() => stopListening())
 
 // Format tanggal header
 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
 const today = new Intl.DateTimeFormat('id-ID', {
-  weekday: 'long',
-  day:     'numeric',
-  month:   'long',
-  year:    'numeric',
+  weekday:  'long',
+  day:      'numeric',
+  month:    'long',
+  year:     'numeric',
   timeZone: tz,
 }).format(new Date())
 
 const TABS = [
-  { id: 'jadwal',    label: 'Jadwal'     },
-  { id: 'kiblat',   label: 'Kiblat'     },
+  { id: 'jadwal',     label: 'Jadwal'     },
+  { id: 'kiblat',    label: 'Kiblat'     },
   { id: 'pengaturan', label: 'Pengaturan' },
 ]
 </script>
@@ -49,21 +56,18 @@ const TABS = [
 <template>
   <div class="flex flex-col min-h-dvh bg-slate-50 max-w-md mx-auto">
 
+    <!-- In-app alert saat masuk waktu sholat (muncul di semua tab) -->
+    <PrayerAlert :prayer="activePrayerAlert" @dismiss="dismissAlert" />
+
     <!-- ======= JADWAL TAB ======= -->
     <div v-show="activeTab === 'jadwal'" class="flex flex-col flex-1">
       <header class="bg-emerald-700 text-white px-5 pt-12 pb-10">
-        <!-- Tanggal -->
         <p class="text-emerald-200 text-xs capitalize mb-4">{{ today }}</p>
-
-        <!-- Lokasi -->
         <LocationDisplay />
-
-        <!-- Countdown -->
         <div class="mt-7 bg-emerald-600/50 rounded-2xl px-4 py-5">
           <CountdownTimer :next-prayer-name="nextPrayer" :next-prayer-time="nextPrayerTime" />
         </div>
       </header>
-
       <PrayerTimes :prayers="prayers" :current-prayer="currentPrayer" />
     </div>
 
@@ -82,7 +86,7 @@ const TABS = [
       <SettingsSheet />
     </div>
 
-    <!-- Install prompt (di luar tab agar selalu muncul) -->
+    <!-- Install prompt -->
     <InstallPrompt class="fixed top-2 inset-x-0 z-20 max-w-md mx-auto" />
 
     <!-- ======= BOTTOM TAB BAR ======= -->
