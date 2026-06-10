@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  qiblaAngle:     { type: Number,  default: null },
-  needleRotation: { type: Number,  default: 0 },
+  qiblaAngle: { type: Number, default: null },
+  needleRotation: { type: Number, default: 0 },
   compassGranted: { type: Boolean, default: false },
 })
 
@@ -12,9 +12,9 @@ const emit = defineEmits(['requestCompass'])
 // Titik tick marks di keliling kompas (36 titik, setiap 10°)
 const ticks = Array.from({ length: 36 }, (_, i) => {
   const angle = i * 10
-  const rad   = (angle - 90) * (Math.PI / 180)
+  const rad = (angle - 90) * (Math.PI / 180)
   const isMajor = i % 9 === 0 // setiap 90°
-  const isMid   = i % 3 === 0 // setiap 30°
+  const isMid = i % 3 === 0 // setiap 30°
   const outer = 108
   const inner = isMajor ? 88 : isMid ? 94 : 98
   return {
@@ -27,7 +27,7 @@ const ticks = Array.from({ length: 36 }, (_, i) => {
 })
 
 const qiblaDisplay = computed(() =>
-  props.qiblaAngle !== null ? `${Math.round(props.qiblaAngle)}°` : '—',
+  props.qiblaAngle !== null ? `${Math.round(props.qiblaAngle)}°` : '—'
 )
 </script>
 
@@ -52,18 +52,42 @@ const qiblaDisplay = computed(() =>
           <line
             v-for="(t, i) in ticks"
             :key="i"
-            :x1="t.x1" :y1="t.y1"
-            :x2="t.x2" :y2="t.y2"
+            :x1="t.x1"
+            :y1="t.y1"
+            :x2="t.x2"
+            :y2="t.y2"
             stroke="#94a3b8"
             :stroke-width="t.strokeWidth"
             stroke-linecap="round"
           />
 
           <!-- Label arah (U/T/S/B) -->
-          <text x="120" y="22"  text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">U</text>
-          <text x="218" y="125" text-anchor="middle" font-size="12" font-weight="600" fill="#64748b">T</text>
-          <text x="120" y="228" text-anchor="middle" font-size="12" font-weight="600" fill="#64748b">S</text>
-          <text x="22"  y="125" text-anchor="middle" font-size="12" font-weight="600" fill="#64748b">B</text>
+          <text x="120" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">
+            U
+          </text>
+          <text
+            x="218"
+            y="125"
+            text-anchor="middle"
+            font-size="12"
+            font-weight="600"
+            fill="#64748b"
+          >
+            T
+          </text>
+          <text
+            x="120"
+            y="228"
+            text-anchor="middle"
+            font-size="12"
+            font-weight="600"
+            fill="#64748b"
+          >
+            S
+          </text>
+          <text x="22" y="125" text-anchor="middle" font-size="12" font-weight="600" fill="#64748b">
+            B
+          </text>
 
           <!-- Jarum kiblat (berputar sesuai needleRotation) -->
           <g :transform="`rotate(${needleRotation}, 120, 120)`">
@@ -79,22 +103,24 @@ const qiblaDisplay = computed(() =>
 
           <!-- Lingkaran tengah -->
           <circle cx="120" cy="120" r="10" fill="#1e293b" />
-          <circle cx="120" cy="120" r="5"  fill="#f8fafc" />
+          <circle cx="120" cy="120" r="5" fill="#f8fafc" />
         </svg>
       </div>
 
       <!-- Info kiblat -->
       <div class="text-center">
         <p class="text-slate-500 text-sm">Sudut kiblat dari lokasi Anda</p>
-        <p class="text-3xl font-bold text-emerald-700 tabular-nums mt-1">{{ qiblaDisplay }}</p>
+        <p class="text-3xl font-bold text-emerald-700 tabular-nums mt-1">
+          {{ qiblaDisplay }}
+        </p>
         <p class="text-slate-400 text-xs mt-0.5">dari arah Utara (searah jarum jam)</p>
       </div>
 
       <!-- Tombol aktifkan kompas -->
       <div v-if="!compassGranted" class="flex flex-col items-center gap-3 w-full max-w-xs">
         <button
-          @click="$emit('requestCompass')"
           class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+          @click="$emit('requestCompass')"
         >
           Aktifkan Kompas Real-time
         </button>
@@ -104,7 +130,14 @@ const qiblaDisplay = computed(() =>
       </div>
 
       <div v-else class="flex items-center gap-2 text-emerald-600">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
         <p class="text-sm font-medium">Kompas aktif</p>

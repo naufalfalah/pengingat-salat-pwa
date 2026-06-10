@@ -4,27 +4,22 @@ import { useSettingsStore } from '../stores/settings.js'
 
 const settings = useSettingsStore()
 const detecting = ref(false)
-const error     = ref('')
+const error = ref('')
 
 async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
       {
-        headers: { 'Accept-Language': 'id', 'Accept': 'application/json' },
+        headers: { 'Accept-Language': 'id', Accept: 'application/json' },
         signal: AbortSignal.timeout(5_000),
-      },
+      }
     )
     if (!res.ok) return null
     const { address } = await res.json()
     // Ambil nama terkecil yang tersedia, dari kota hingga provinsi
     return (
-      address.city      ||
-      address.town      ||
-      address.village   ||
-      address.county    ||
-      address.state     ||
-      null
+      address.city || address.town || address.village || address.county || address.state || null
     )
   } catch {
     return null
@@ -37,10 +32,13 @@ async function detectLocation() {
     return
   }
   detecting.value = true
-  error.value     = ''
+  error.value = ''
   try {
     const pos = await new Promise((resolve, reject) =>
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10_000, maximumAge: 0 }),
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        timeout: 10_000,
+        maximumAge: 0,
+      })
     )
     const { latitude: lat, longitude: lng } = pos.coords
 
@@ -66,9 +64,9 @@ async function detectLocation() {
     </div>
 
     <button
-      @click="detectLocation"
       :disabled="detecting"
       class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 active:bg-white/10 text-white text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-60 shrink-0"
+      @click="detectLocation"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -79,9 +77,24 @@ async function detectLocation() {
         stroke="currentColor"
         stroke-width="2.5"
       >
-        <path v-if="!detecting" stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        <path v-if="!detecting" stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path v-if="detecting" stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        <path
+          v-if="!detecting"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+        />
+        <path
+          v-if="!detecting"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+        <path
+          v-if="detecting"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        />
       </svg>
       {{ detecting ? 'Mendeteksi…' : 'Perbarui' }}
     </button>

@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { getSetting, setSetting } from '../db/index.js'
 
 export const useSettingsStore = defineStore('settings', () => {
-  const location = ref(null)       // { lat, lng, cityName }
+  const location = ref(null) // { lat, lng, cityName }
   const calculationMethod = ref('MoonsightingCommittee')
   const madhab = ref('Shafi')
   const notificationsEnabled = ref(false)

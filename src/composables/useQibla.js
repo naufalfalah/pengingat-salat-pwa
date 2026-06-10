@@ -2,15 +2,19 @@ import { ref, computed, isRef, onUnmounted } from 'vue'
 
 const MECCA = { lat: 21.4225, lng: 39.8262 }
 
-function toRad(deg) { return deg * (Math.PI / 180) }
-function toDeg(rad) { return rad * (180 / Math.PI) }
+function toRad(deg) {
+  return deg * (Math.PI / 180)
+}
+function toDeg(rad) {
+  return rad * (180 / Math.PI)
+}
 
 function bearing(fromLat, fromLng, toLat, toLng) {
-  const dLng    = toRad(toLng - fromLng)
-  const fromR   = toRad(fromLat)
-  const toR     = toRad(toLat)
-  const y       = Math.sin(dLng) * Math.cos(toR)
-  const x       = Math.cos(fromR) * Math.sin(toR) - Math.sin(fromR) * Math.cos(toR) * Math.cos(dLng)
+  const dLng = toRad(toLng - fromLng)
+  const fromR = toRad(fromLat)
+  const toR = toRad(toLat)
+  const y = Math.sin(dLng) * Math.cos(toR)
+  const x = Math.cos(fromR) * Math.sin(toR) - Math.sin(fromR) * Math.cos(toR) * Math.cos(dLng)
   return (toDeg(Math.atan2(y, x)) + 360) % 360
 }
 
@@ -23,8 +27,8 @@ export function useQibla(latInput, lngInput) {
     return bearing(lat.value, lng.value, MECCA.lat, MECCA.lng)
   })
 
-  const deviceHeading    = ref(null)
-  const compassGranted   = ref(false)
+  const deviceHeading = ref(null)
+  const compassGranted = ref(false)
   const compassRequested = ref(false)
 
   // Rotasi jarum = arah kiblat dikurangi heading device (agar jarum selalu menunjuk ke Mekkah)
@@ -54,7 +58,10 @@ export function useQibla(latInput, lngInput) {
 
   async function requestCompass() {
     compassRequested.value = true
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'
+    ) {
       // iOS 13+
       try {
         const result = await DeviceOrientationEvent.requestPermission()
@@ -70,5 +77,13 @@ export function useQibla(latInput, lngInput) {
 
   onUnmounted(stopListening)
 
-  return { qiblaAngle, deviceHeading, compassGranted, compassRequested, needleRotation, requestCompass, stopListening }
+  return {
+    qiblaAngle,
+    deviceHeading,
+    compassGranted,
+    compassRequested,
+    needleRotation,
+    requestCompass,
+    stopListening,
+  }
 }

@@ -1,6 +1,6 @@
 <script setup>
 const props = defineProps({
-  prayers:       { type: Array,  default: () => [] },
+  prayers: { type: Array, default: () => [] },
   currentPrayer: { type: String, default: null },
 })
 
@@ -9,19 +9,19 @@ const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
 function formatTime(date) {
   if (!date) return '--:--'
   return new Intl.DateTimeFormat('id-ID', {
-    hour:     '2-digit',
-    minute:   '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
     timeZone: tz,
   }).format(date)
 }
 
 // Ikon sederhana untuk setiap waktu sholat
 const ICONS = {
-  fajr:    '🌙',
-  dhuhr:   '☀️',
-  asr:     '🌤',
+  fajr: '🌙',
+  dhuhr: '☀️',
+  asr: '🌤',
   maghrib: '🌅',
-  isha:    '🌃',
+  isha: '🌃',
 }
 </script>
 
@@ -47,7 +47,10 @@ const ICONS = {
           >
             {{ prayer.name }}
           </p>
-          <p v-if="prayer.key === currentPrayer" class="text-xs text-emerald-500 font-medium mt-0.5">
+          <p
+            v-if="prayer.key === currentPrayer"
+            class="text-xs text-emerald-500 font-medium mt-0.5"
+          >
             Sedang berlangsung
           </p>
         </div>

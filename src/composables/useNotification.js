@@ -5,7 +5,7 @@ export function useNotification(prayers, enabledInput) {
 
   // Ref yang bisa dibaca komponen untuk menampilkan in-app alert
   const activePrayerAlert = ref(null) // { name, key } saat masuk waktu sholat
-  const alertTimer        = ref(null)
+  const alertTimer = ref(null)
 
   const timers = []
 
@@ -42,12 +42,12 @@ export function useNotification(prayers, enabledInput) {
         setTimeout(async () => {
           if (Notification.permission === 'granted' && enabled.value) {
             const payload = {
-              body:     `Sudah masuk waktu sholat ${p.name}`,
-              icon:     '/icons/icon-192.png',
-              badge:    '/icons/icon-192.png',
-              tag:      `salat-${p.key}`,
+              body: `Sudah masuk waktu sholat ${p.name}`,
+              icon: '/icons/icon-192.png',
+              badge: '/icons/icon-192.png',
+              tag: `salat-${p.key}`,
               renotify: true,
-              vibrate:  [200, 100, 200],
+              vibrate: [200, 100, 200],
             }
             try {
               // Gunakan SW registration agar notifikasi muncul saat app di-background
@@ -63,7 +63,7 @@ export function useNotification(prayers, enabledInput) {
           }
           // In-app alert sebagai fallback atau pelengkap
           if (enabled.value) triggerInApp(p)
-        }, delay),
+        }, delay)
       )
     }
   }
@@ -75,7 +75,7 @@ export function useNotification(prayers, enabledInput) {
       if (enabled.value) scheduleAll(list)
       else clearAll()
     },
-    { immediate: true, deep: true },
+    { immediate: true, deep: true }
   )
 
   onUnmounted(clearAll)

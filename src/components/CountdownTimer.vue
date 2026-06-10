@@ -3,21 +3,25 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   nextPrayerName: { type: String, default: null },
-  nextPrayerTime: { type: Date,   default: null },
+  nextPrayerTime: { type: Date, default: null },
 })
 
 const PRAYER_LABELS = {
-  fajr:    'Subuh',
-  dhuhr:   'Dzuhur',
-  asr:     'Asar',
+  fajr: 'Subuh',
+  dhuhr: 'Dzuhur',
+  asr: 'Asar',
   maghrib: 'Maghrib',
-  isha:    'Isya',
+  isha: 'Isya',
 }
 
 const now = ref(new Date())
 let timer
 
-onMounted(()  => { timer = setInterval(() => { now.value = new Date() }, 1_000) })
+onMounted(() => {
+  timer = setInterval(() => {
+    now.value = new Date()
+  }, 1_000)
+})
 onUnmounted(() => clearInterval(timer))
 
 const remaining = computed(() => {
@@ -31,16 +35,20 @@ const remaining = computed(() => {
   }
 })
 
-function pad(n) { return String(n).padStart(2, '0') }
+function pad(n) {
+  return String(n).padStart(2, '0')
+}
 </script>
 
 <template>
   <div v-if="remaining" class="text-center">
     <p class="text-emerald-200 text-xs uppercase tracking-wider font-medium">
-      {{ nextPrayerName ? PRAYER_LABELS[nextPrayerName] ?? nextPrayerName : '—' }} dalam
+      {{ nextPrayerName ? (PRAYER_LABELS[nextPrayerName] ?? nextPrayerName) : '—' }}
+      dalam
     </p>
     <p class="text-white text-4xl font-bold tracking-tight tabular-nums mt-1">
-      {{ pad(remaining.h) }}<span class="text-emerald-300 text-2xl">:</span>{{ pad(remaining.m) }}<span class="text-emerald-300 text-2xl">:</span>{{ pad(remaining.s) }}
+      {{ pad(remaining.h) }}<span class="text-emerald-300 text-2xl">:</span>{{ pad(remaining.m)
+      }}<span class="text-emerald-300 text-2xl">:</span>{{ pad(remaining.s) }}
     </p>
   </div>
   <div v-else class="text-center">
