@@ -26,6 +26,12 @@ async function reverseGeocode(lat, lng) {
   }
 }
 
+const ERROR_MESSAGES = {
+  1: 'Izin lokasi ditolak — periksa pengaturan browser',
+  2: 'Lokasi tidak tersedia — aktifkan GPS atau Wi-Fi',
+  3: 'Waktu deteksi habis — coba lagi',
+}
+
 async function detectLocation() {
   if (!navigator.geolocation) {
     error.value = 'Browser tidak mendukung geolocation'
@@ -36,17 +42,16 @@ async function detectLocation() {
   try {
     const pos = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, {
-        timeout: 10_000,
-        maximumAge: 0,
+        enableHighAccuracy: false, // pakai jaringan/Wi-Fi, lebih cepat dari GPS murni
+        timeout: 15_000,
+        maximumAge: 60_000, // terima posisi cache hingga 1 menit
       })
     )
     const { latitude: lat, longitude: lng } = pos.coords
-
-    // Coba reverse geocoding; fallback ke koordinat jika gagal / offline
     const cityName = (await reverseGeocode(lat, lng)) ?? `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`
     await settings.saveLocation(lat, lng, cityName)
   } catch (e) {
-    error.value = e.code === 1 ? 'Izin lokasi ditolak' : 'Gagal mendeteksi lokasi'
+    error.value = ERROR_MESSAGES[e?.code] ?? 'Gagal mendeteksi lokasi'
   } finally {
     detecting.value = false
   }
