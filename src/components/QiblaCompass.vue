@@ -43,8 +43,10 @@ const qiblaDisplay = computed(() =>
 
     <!-- Compass -->
     <div class="flex flex-col items-center justify-center flex-1 px-6 py-8 gap-6">
-      <div class="bg-white rounded-full shadow-lg p-4">
-        <svg viewBox="0 0 240 240" width="240" height="240" class="select-none">
+      <div
+        class="bg-white rounded-full shadow-lg p-4 w-[min(72vw,272px)] aspect-square flex items-center justify-center"
+      >
+        <svg viewBox="0 0 240 240" class="select-none w-full h-full">
           <!-- Lingkaran luar -->
           <circle cx="120" cy="120" r="112" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
 

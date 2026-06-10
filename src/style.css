@@ -1,1 +1,25 @@
 @import 'tailwindcss';
+
+/* ─── Transisi antar tab ─── */
+.tab-enter-active,
+.tab-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.tab-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.tab-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ─── Safe area (notch / home indicator iPhone) ─── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}

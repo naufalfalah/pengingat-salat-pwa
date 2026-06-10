@@ -16,7 +16,6 @@ import PrayerAlert from './components/PrayerAlert.vue'
 const settings = useSettingsStore()
 const activeTab = ref('jadwal')
 
-// Fallback ke Jakarta jika lokasi belum dideteksi
 const lat = computed(() => settings.location?.lat ?? -6.2088)
 const lng = computed(() => settings.location?.lng ?? 106.8456)
 
@@ -40,7 +39,6 @@ const { activePrayerAlert, dismissAlert } = useNotification(
 onMounted(() => settings.loadFromDB())
 onUnmounted(() => stopListening())
 
-// Format tanggal header
 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
 const today = new Intl.DateTimeFormat('id-ID', {
   weekday: 'long',
@@ -59,41 +57,44 @@ const TABS = [
 
 <template>
   <div class="flex flex-col min-h-dvh bg-slate-50 max-w-md mx-auto">
-    <!-- In-app alert saat masuk waktu sholat (muncul di semua tab) -->
+    <!-- Alert masuk waktu sholat — muncul di atas semua tab -->
     <PrayerAlert :prayer="activePrayerAlert" @dismiss="dismissAlert" />
 
-    <!-- ======= JADWAL TAB ======= -->
-    <div v-show="activeTab === 'jadwal'" class="flex flex-col flex-1">
-      <header class="bg-emerald-700 text-white px-5 pt-12 pb-10">
-        <p class="text-emerald-200 text-xs capitalize mb-4">{{ today }}</p>
-        <LocationDisplay />
-        <div class="mt-7 bg-emerald-600/50 rounded-2xl px-4 py-5">
-          <CountdownTimer :next-prayer-name="nextPrayer" :next-prayer-time="nextPrayerTime" />
-        </div>
-      </header>
-      <PrayerTimes :prayers="prayers" :current-prayer="currentPrayer" />
-    </div>
+    <!-- ======= KONTEN TAB (dengan animasi transisi) ======= -->
+    <Transition name="tab" mode="out-in">
+      <!-- JADWAL -->
+      <div v-if="activeTab === 'jadwal'" key="jadwal" class="flex flex-col flex-1">
+        <header class="bg-emerald-700 text-white px-5 pt-12 pb-10">
+          <p class="text-emerald-200 text-xs capitalize mb-4">{{ today }}</p>
+          <LocationDisplay />
+          <div class="mt-6 bg-emerald-600/50 rounded-2xl px-4 py-5">
+            <CountdownTimer :next-prayer-name="nextPrayer" :next-prayer-time="nextPrayerTime" />
+          </div>
+        </header>
+        <PrayerTimes :prayers="prayers" :current-prayer="currentPrayer" />
+      </div>
 
-    <!-- ======= KIBLAT TAB ======= -->
-    <div v-show="activeTab === 'kiblat'" class="flex flex-col flex-1">
-      <QiblaCompass
-        :qibla-angle="qiblaAngle"
-        :needle-rotation="needleRotation"
-        :compass-granted="compassGranted"
-        @request-compass="requestCompass"
-      />
-    </div>
+      <!-- KIBLAT -->
+      <div v-else-if="activeTab === 'kiblat'" key="kiblat" class="flex flex-col flex-1">
+        <QiblaCompass
+          :qibla-angle="qiblaAngle"
+          :needle-rotation="needleRotation"
+          :compass-granted="compassGranted"
+          @request-compass="requestCompass"
+        />
+      </div>
 
-    <!-- ======= PENGATURAN TAB ======= -->
-    <div v-show="activeTab === 'pengaturan'" class="flex flex-col flex-1">
-      <SettingsSheet />
-    </div>
+      <!-- PENGATURAN -->
+      <div v-else key="pengaturan" class="flex flex-col flex-1">
+        <SettingsSheet />
+      </div>
+    </Transition>
 
     <!-- Install prompt -->
     <InstallPrompt class="fixed top-2 inset-x-0 z-20 max-w-md mx-auto" />
 
     <!-- ======= BOTTOM TAB BAR ======= -->
-    <nav class="shrink-0 bg-white border-t border-slate-200">
+    <nav class="shrink-0 bg-white border-t border-slate-200 pb-safe">
       <div class="flex">
         <button
           v-for="tab in TABS"
@@ -102,7 +103,7 @@ const TABS = [
           :class="activeTab === tab.id ? 'text-emerald-600' : 'text-slate-400'"
           @click="activeTab = tab.id"
         >
-          <!-- Jadwal icon -->
+          <!-- Jadwal -->
           <svg
             v-if="tab.id === 'jadwal'"
             xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +119,7 @@ const TABS = [
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <!-- Kiblat icon -->
+          <!-- Kiblat -->
           <svg
             v-if="tab.id === 'kiblat'"
             xmlns="http://www.w3.org/2000/svg"
@@ -134,7 +135,7 @@ const TABS = [
               d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"
             />
           </svg>
-          <!-- Pengaturan icon -->
+          <!-- Pengaturan -->
           <svg
             v-if="tab.id === 'pengaturan'"
             xmlns="http://www.w3.org/2000/svg"
