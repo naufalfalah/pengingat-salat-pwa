@@ -16,6 +16,12 @@ import PrayerAlert from './components/PrayerAlert.vue'
 const settings = useSettingsStore()
 const activeTab = ref('jadwal')
 
+function switchTab(id) {
+  activeTab.value = id
+  // Panggil requestCompass dari tab click (= user gesture) agar iOS tidak minta manual tiap buka
+  if (id === 'kiblat') requestCompass()
+}
+
 const lat = computed(() => settings.location?.lat ?? -6.2088)
 const lng = computed(() => settings.location?.lng ?? 106.8456)
 
@@ -101,7 +107,7 @@ const TABS = [
           :key="tab.id"
           class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors"
           :class="activeTab === tab.id ? 'text-emerald-600' : 'text-slate-400'"
-          @click="activeTab = tab.id"
+          @click="switchTab(tab.id)"
         >
           <!-- Jadwal -->
           <svg

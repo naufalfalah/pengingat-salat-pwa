@@ -39,19 +39,36 @@ async function detectLocation() {
   }
   detecting.value = true
   error.value = ''
+
+  // Fase 1: dapatkan koordinat GPS
+  let lat, lng
   try {
     const pos = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: false, // pakai jaringan/Wi-Fi, lebih cepat dari GPS murni
-        timeout: 15_000,
-        maximumAge: 60_000, // terima posisi cache hingga 1 menit
+        enableHighAccuracy: false,
+        timeout: 30_000,
+        maximumAge: 0, // selalu minta posisi baru saat user menekan "Perbarui"
       })
     )
-    const { latitude: lat, longitude: lng } = pos.coords
+    lat = pos.coords.latitude
+    lng = pos.coords.longitude
+  } catch (e) {
+    error.value = ERROR_MESSAGES[e?.code] ?? 'Gagal mendapatkan sinyal GPS'
+    detecting.value = false
+    return
+  }
+
+  // Fase 2: reverse geocode dan simpan (error di sini tidak menghalangi penyimpanan koordinat)
+  try {
     const cityName = (await reverseGeocode(lat, lng)) ?? `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`
     await settings.saveLocation(lat, lng, cityName)
-  } catch (e) {
-    error.value = ERROR_MESSAGES[e?.code] ?? 'Gagal mendeteksi lokasi'
+  } catch {
+    // Jika reverse geocode atau IndexedDB gagal, simpan koordinat mentah sebagai fallback
+    try {
+      await settings.saveLocation(lat, lng, `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`)
+    } catch {
+      error.value = 'Lokasi didapat tapi gagal disimpan — coba lagi'
+    }
   } finally {
     detecting.value = false
   }
