@@ -4,7 +4,7 @@
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-offline--first-5BB4E5?logo=googlechrome&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38BDF8?logo=tailwindcss&logoColor=white)
-![License](https://img.shields.io/badge/license-private-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 > A zero-backend Progressive Web App that calculates Islamic prayer times from GPS coordinates and provides a real-time Qibla compass — works fully offline after the first load.
 
@@ -88,12 +88,9 @@ This project has no environment variables — by design. There is no backend, no
 
 ### Deployment
 
-The repo includes ready-to-use configs for both major static hosts:
+The app is a static build (`npm run build` → `/dist`) and deploys to any static host (Netlify, Vercel, GitHub Pages, etc.). No host-specific config is checked into this repo yet.
 
-- **Netlify**: `netlify.toml` — build command, SPA fallback redirect, and correct `Cache-Control: no-cache` header for `sw.js`
-- **Vercel**: `vercel.json` — equivalent rewrite rules and headers
-
-The `sw.js` `Cache-Control: no-cache` header is required so browsers always fetch the latest Service Worker version and can trigger `autoUpdate` registration.
+One thing to configure on whichever host you use: serve `sw.js` with `Cache-Control: no-cache`, so browsers always fetch the latest Service Worker version and Workbox's `autoUpdate` registration can pick up new deploys immediately — otherwise a cached `sw.js` can pin a user to a stale app shell.
 
 ## Key Technical Decisions
 
@@ -127,3 +124,7 @@ No automated test suite is present in this codebase. The project was validated t
 - Lighthouse PWA audit (requires HTTPS deployment — run via Netlify/Vercel preview URL)
 - Browser DevTools → Application → Service Workers for cache inspection
 - DevTools → Network → Offline mode to verify the app shell loads without network
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
