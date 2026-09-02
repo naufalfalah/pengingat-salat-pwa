@@ -34,7 +34,7 @@ const qiblaDisplay = computed(() =>
 <template>
   <div class="flex flex-col min-h-full bg-slate-50">
     <!-- Header -->
-    <div class="bg-emerald-700 text-white px-5 pt-12 pb-8 text-center">
+    <div class="bg-emerald-700 text-white px-5 pt-12 pb-8 text-center md:rounded-3xl md:pt-8">
       <h1 class="text-lg font-bold tracking-wide">Arah Kiblat</h1>
       <p class="text-emerald-200 text-sm mt-1">
         {{ qiblaAngle !== null ? `${qiblaDisplay} dari Utara` : 'Deteksi lokasi terlebih dahulu' }}
@@ -42,9 +42,11 @@ const qiblaDisplay = computed(() =>
     </div>
 
     <!-- Compass -->
-    <div class="flex flex-col items-center justify-center flex-1 px-6 py-8 gap-6">
+    <div
+      class="flex flex-col items-center justify-center flex-1 px-6 py-8 gap-6 lg:flex-row lg:gap-16 lg:py-16"
+    >
       <div
-        class="bg-white rounded-full shadow-lg p-4 w-[min(72vw,272px)] aspect-square flex items-center justify-center"
+        class="bg-white rounded-full shadow-lg p-4 w-[min(72vw,272px)] md:w-72 lg:w-80 aspect-square flex items-center justify-center shrink-0"
       >
         <svg viewBox="0 0 240 240" class="select-none w-full h-full">
           <!-- Lingkaran luar -->
@@ -109,47 +111,49 @@ const qiblaDisplay = computed(() =>
         </svg>
       </div>
 
-      <!-- Info kiblat -->
-      <div class="text-center">
-        <p class="text-slate-500 text-sm">Sudut kiblat dari lokasi Anda</p>
-        <p class="text-3xl font-bold text-emerald-700 tabular-nums mt-1">
-          {{ qiblaDisplay }}
+      <div class="flex flex-col items-center gap-6 lg:items-start lg:max-w-xs">
+        <!-- Info kiblat -->
+        <div class="text-center lg:text-left">
+          <p class="text-slate-500 text-sm">Sudut kiblat dari lokasi Anda</p>
+          <p class="text-3xl font-bold text-emerald-700 tabular-nums mt-1">
+            {{ qiblaDisplay }}
+          </p>
+          <p class="text-slate-400 text-xs mt-0.5">dari arah Utara (searah jarum jam)</p>
+        </div>
+
+        <!-- Tombol aktifkan kompas -->
+        <div v-if="!compassGranted" class="flex flex-col items-center gap-3 w-full max-w-xs lg:items-start">
+          <button
+            class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+            @click="$emit('requestCompass')"
+          >
+            Aktifkan Kompas Real-time
+          </button>
+          <p class="text-slate-400 text-xs text-center leading-relaxed lg:text-left">
+            Izinkan akses sensor perangkat untuk petunjuk arah kiblat secara real-time
+          </p>
+        </div>
+
+        <div v-else class="flex items-center gap-2 text-emerald-600">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <p class="text-sm font-medium">Kompas aktif</p>
+        </div>
+
+        <!-- Disclaimer -->
+        <p class="text-slate-400 text-xs text-center leading-relaxed max-w-xs lg:text-left">
+          Kompas magnetometer dapat tidak akurat di dekat benda logam atau perangkat elektronik.
+          Gunakan sebagai panduan, bukan acuan utama.
         </p>
-        <p class="text-slate-400 text-xs mt-0.5">dari arah Utara (searah jarum jam)</p>
       </div>
-
-      <!-- Tombol aktifkan kompas -->
-      <div v-if="!compassGranted" class="flex flex-col items-center gap-3 w-full max-w-xs">
-        <button
-          class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
-          @click="$emit('requestCompass')"
-        >
-          Aktifkan Kompas Real-time
-        </button>
-        <p class="text-slate-400 text-xs text-center leading-relaxed">
-          Izinkan akses sensor perangkat untuk petunjuk arah kiblat secara real-time
-        </p>
-      </div>
-
-      <div v-else class="flex items-center gap-2 text-emerald-600">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-        <p class="text-sm font-medium">Kompas aktif</p>
-      </div>
-
-      <!-- Disclaimer -->
-      <p class="text-slate-400 text-xs text-center leading-relaxed max-w-xs">
-        Kompas magnetometer dapat tidak akurat di dekat benda logam atau perangkat elektronik.
-        Gunakan sebagai panduan, bukan acuan utama.
-      </p>
     </div>
   </div>
 </template>
