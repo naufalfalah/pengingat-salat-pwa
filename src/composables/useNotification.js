@@ -1,7 +1,12 @@
 import { ref, watch, isRef, onUnmounted } from 'vue'
 
+/**
+ * @param prayers daftar waktu sholat (ref/array)
+ * @param enabledInput ref objek `{ fajr, dhuhr, asr, maghrib, isha }` — status notifikasi per waktu sholat
+ */
 export function useNotification(prayers, enabledInput) {
   const enabled = isRef(enabledInput) ? enabledInput : ref(enabledInput)
+  const isPrayerEnabled = (key) => !!enabled.value?.[key]
 
   // Ref yang bisa dibaca komponen untuk menampilkan in-app alert
   const activePrayerAlert = ref(null) // { name, key } saat masuk waktu sholat
@@ -28,7 +33,9 @@ export function useNotification(prayers, enabledInput) {
   }
 
   async function fireNotification(p) {
-    if (Notification.permission === 'granted' && enabled.value) {
+    if (!isPrayerEnabled(p.key)) return
+
+    if (Notification.permission === 'granted') {
       const payload = {
         body: `Sudah masuk waktu sholat ${p.name}`,
         icon: '/icons/icon-192.png',
@@ -48,7 +55,7 @@ export function useNotification(prayers, enabledInput) {
         // Ditangani lewat in-app alert di bawah
       }
     }
-    if (enabled.value) triggerInApp(p)
+    triggerInApp(p)
   }
 
   function scheduleAll(prayerList) {
@@ -58,7 +65,7 @@ export function useNotification(prayers, enabledInput) {
     const now = Date.now()
 
     for (const p of prayerList) {
-      if (!p.time) continue
+      if (!p.time || !isPrayerEnabled(p.key)) continue
       const delay = p.time.getTime() - now
       if (delay < 0 || delay > 24 * 60 * 60 * 1_000) continue
 
@@ -71,7 +78,7 @@ export function useNotification(prayers, enabledInput) {
   // lalu jadwalkan ulang sisa hari ini. Ini mengatasi setTimeout yang
   // tidak berjalan saat iOS membekukan app.
   function handleVisibilityChange() {
-    if (document.visibilityState !== 'visible' || !enabled.value) return
+    if (document.visibilityState !== 'visible') return
 
     const list = isRef(prayers) ? prayers.value : prayers
     if (!list?.length) return
@@ -79,12 +86,18 @@ export function useNotification(prayers, enabledInput) {
     const now = Date.now()
     const missed = 15 * 60 * 1_000 // 15 menit
 
-    // Tampilkan alert untuk sholat yang baru terlewat (paling dekat ke sekarang)
+    // Tampilkan alert untuk sholat (yang notifikasinya aktif) yang baru terlewat
     const recentlyMissed = list
-      .filter((p) => p.time && p.time.getTime() <= now && now - p.time.getTime() <= missed)
+      .filter(
+        (p) =>
+          isPrayerEnabled(p.key) &&
+          p.time &&
+          p.time.getTime() <= now &&
+          now - p.time.getTime() <= missed
+      )
       .sort((a, b) => b.time.getTime() - a.time.getTime())[0]
 
-    if (recentlyMissed && enabled.value) triggerInApp(recentlyMissed)
+    if (recentlyMissed) triggerInApp(recentlyMissed)
 
     // Jadwalkan ulang sisa hari ini
     scheduleAll(list)
@@ -92,15 +105,8 @@ export function useNotification(prayers, enabledInput) {
 
   document.addEventListener('visibilitychange', handleVisibilityChange)
 
-  // Jadwalkan ulang setiap kali daftar sholat atau status enabled berubah
-  watch(
-    [prayers, enabled],
-    ([list]) => {
-      if (enabled.value) scheduleAll(list)
-      else clearAll()
-    },
-    { immediate: true, deep: true }
-  )
+  // Jadwalkan ulang setiap kali daftar sholat atau status enabled per-waktu berubah
+  watch([prayers, enabled], ([list]) => scheduleAll(list), { immediate: true, deep: true })
 
   onUnmounted(() => {
     clearAll()

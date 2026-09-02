@@ -121,12 +121,14 @@ const TAB_ICON_PATHS = {
     </aside>
 
     <!-- ======= MAIN ======= -->
-    <div class="relative flex flex-col flex-1 min-w-0">
+    <div
+      class="relative flex flex-col flex-1 min-w-0 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"
+    >
       <!-- Alert masuk waktu sholat — muncul di atas semua tab -->
       <PrayerAlert
         :prayer="activePrayerAlert"
-        @dismiss="dismissAlert"
         class="md:max-w-3xl md:w-full md:mx-auto lg:max-w-5xl"
+        @dismiss="dismissAlert"
       />
 
       <!-- ======= KONTEN TAB (dengan animasi transisi) ======= -->
@@ -178,8 +180,10 @@ const TAB_ICON_PATHS = {
       <!-- Install prompt -->
       <InstallPrompt class="absolute top-2 inset-x-0 z-20 md:max-w-sm md:mx-auto" />
 
-      <!-- ======= BOTTOM TAB BAR (Mobile & Tablet) ======= -->
-      <nav class="lg:hidden shrink-0 bg-white border-t border-slate-200 pb-safe">
+      <!-- ======= BOTTOM TAB BAR (Mobile & Tablet) — fixed menempel di bawah layar ======= -->
+      <nav
+        class="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-white border-t border-slate-200 pb-safe"
+      >
         <div class="flex md:max-w-3xl md:mx-auto">
           <button
             v-for="tab in TABS"

@@ -9,7 +9,8 @@ const error = ref('')
 async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      // zoom=16 & addressdetails=1 agar Nominatim mengembalikan detail level kecamatan
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16`,
       {
         headers: { 'Accept-Language': 'id', Accept: 'application/json' },
         signal: AbortSignal.timeout(5_000),
@@ -17,10 +18,12 @@ async function reverseGeocode(lat, lng) {
     )
     if (!res.ok) return null
     const { address } = await res.json()
-    // Ambil nama terkecil yang tersedia, dari kota hingga provinsi
-    return (
-      address.city || address.town || address.village || address.county || address.state || null
-    )
+
+    const kecamatan = address.suburb || address.city_district || address.village || null
+    const kota = address.city || address.town || address.county || address.state || null
+
+    if (kecamatan && kota && kecamatan !== kota) return `${kecamatan}, ${kota}`
+    return kecamatan || kota || null
   } catch {
     return null
   }

@@ -1,19 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useSettingsStore } from '../stores/settings.js'
-import { requestNotificationPermission } from '../composables/useNotification.js'
 
 const settings = useSettingsStore()
 
-const isNotificationSupported = 'Notification' in window
-const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
-
 const selectedMethod = ref(settings.calculationMethod)
 const selectedMadhab = ref(settings.madhab)
-const notifEnabled = ref(settings.notificationsEnabled)
 
 const saved = ref(false)
-const notifDenied = ref(false)
 
 const METHODS = [
   {
@@ -46,15 +40,6 @@ const METHODS = [
 async function saveSettings() {
   settings.calculationMethod = selectedMethod.value
   settings.madhab = selectedMadhab.value
-
-  if (notifEnabled.value) {
-    const granted = await requestNotificationPermission()
-    if (!granted) {
-      notifEnabled.value = false
-      notifDenied.value = true
-    }
-  }
-  settings.notificationsEnabled = notifEnabled.value
 
   await settings.savePreferences()
   saved.value = true
@@ -100,97 +85,46 @@ async function saveSettings() {
         </div>
       </section>
 
-      <!-- Kolom kanan (lg): Madhab + Notifikasi -->
-      <div class="space-y-7 mt-7 lg:mt-0">
-        <!-- Madhab -->
-        <section>
-          <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            Madhab (Waktu Asar)
-          </h2>
-          <div class="bg-white rounded-2xl overflow-hidden shadow-sm divide-y divide-slate-100">
-            <label
-              class="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <input
-                v-model="selectedMadhab"
-                type="radio"
-                value="Shafi"
-                class="accent-emerald-600 w-4 h-4 shrink-0"
-              />
-              <div>
-                <p class="text-sm font-medium text-slate-800">Syafi'i / Maliki / Hambali</p>
-                <p class="text-xs text-slate-400 mt-0.5">
-                  Mayoritas Indonesia — panjang bayangan = 1× tinggi benda
-                </p>
-              </div>
-            </label>
-            <label
-              class="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
-            >
-              <input
-                v-model="selectedMadhab"
-                type="radio"
-                value="Hanafi"
-                class="accent-emerald-600 w-4 h-4 shrink-0"
-              />
-              <div>
-                <p class="text-sm font-medium text-slate-800">Hanafi</p>
-                <p class="text-xs text-slate-400 mt-0.5">
-                  Panjang bayangan = 2× tinggi benda (Asar lebih akhir)
-                </p>
-              </div>
-            </label>
-          </div>
-        </section>
-
-        <!-- Notifikasi -->
-        <section>
-          <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            Notifikasi
-          </h2>
-
-          <div v-if="!isNotificationSupported" class="bg-amber-50 rounded-2xl px-4 py-3.5">
-            <p class="text-sm font-medium text-amber-800">Notifikasi tidak didukung</p>
-            <p class="text-xs text-amber-600 mt-0.5">
-              Pastikan iOS 16.4+ dan aplikasi sudah ditambahkan ke Home Screen, atau gunakan
-              browser Android.
-            </p>
-          </div>
-
-          <template v-else>
-            <div
-              class="bg-white rounded-2xl shadow-sm px-4 py-3.5 flex items-center justify-between gap-3"
-            >
-              <div>
-                <p class="text-sm font-medium text-slate-800">Pengingat Waktu Sholat</p>
-                <p class="text-xs text-slate-400 mt-0.5">
-                  Notifikasi otomatis saat masuk waktu sholat
-                </p>
-              </div>
-              <button
-                class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus:outline-none"
-                :class="notifEnabled ? 'bg-emerald-600' : 'bg-slate-300'"
-                @click="notifEnabled = !notifEnabled"
-              >
-                <span
-                  class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 mt-0.5"
-                  :class="notifEnabled ? 'translate-x-5' : 'translate-x-0.5'"
-                />
-              </button>
+      <!-- Madhab -->
+      <section class="mt-7 lg:mt-0">
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+          Madhab (Waktu Asar)
+        </h2>
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm divide-y divide-slate-100">
+          <label
+            class="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <input
+              v-model="selectedMadhab"
+              type="radio"
+              value="Shafi"
+              class="accent-emerald-600 w-4 h-4 shrink-0"
+            />
+            <div>
+              <p class="text-sm font-medium text-slate-800">Syafi'i / Maliki / Hambali</p>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Mayoritas Indonesia — panjang bayangan = 1× tinggi benda
+              </p>
             </div>
-            <p v-if="notifDenied" class="text-xs text-red-500 mt-2 px-1">
-              Izin notifikasi ditolak. Aktifkan melalui Pengaturan → [nama app] → Notifikasi.
-            </p>
-            <p v-else-if="notifEnabled && isIOS" class="text-xs text-amber-600 mt-2 px-1">
-              Di iOS, notifikasi aktif saat aplikasi terbuka atau dalam 15 menit setelah masuk
-              waktu sholat ketika app dibuka kembali.
-            </p>
-            <p v-else-if="notifEnabled" class="text-xs text-slate-400 mt-2 px-1">
-              Izin notifikasi akan diminta saat menyimpan pengaturan.
-            </p>
-          </template>
-        </section>
-      </div>
+          </label>
+          <label
+            class="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <input
+              v-model="selectedMadhab"
+              type="radio"
+              value="Hanafi"
+              class="accent-emerald-600 w-4 h-4 shrink-0"
+            />
+            <div>
+              <p class="text-sm font-medium text-slate-800">Hanafi</p>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Panjang bayangan = 2× tinggi benda (Asar lebih akhir)
+              </p>
+            </div>
+          </label>
+        </div>
+      </section>
     </div>
 
     <!-- Tombol simpan -->

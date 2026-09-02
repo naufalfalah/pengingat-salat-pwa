@@ -122,7 +122,10 @@ const qiblaDisplay = computed(() =>
         </div>
 
         <!-- Tombol aktifkan kompas -->
-        <div v-if="!compassGranted" class="flex flex-col items-center gap-3 w-full max-w-xs lg:items-start">
+        <div
+          v-if="!compassGranted"
+          class="flex flex-col items-center gap-3 w-full max-w-xs lg:items-start"
+        >
           <button
             class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
             @click="$emit('requestCompass')"

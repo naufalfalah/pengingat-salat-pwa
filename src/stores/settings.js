@@ -2,11 +2,22 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getSetting, setSetting } from '../db/index.js'
 
+// Notifikasi diatur per waktu sholat, bukan satu toggle global
+const DEFAULT_NOTIFICATIONS = { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false }
+
+function normalizeNotifications(value) {
+  if (typeof value === 'boolean') {
+    // Migrasi dari versi lama yang cuma punya satu toggle untuk semua waktu sholat
+    return Object.fromEntries(Object.keys(DEFAULT_NOTIFICATIONS).map((k) => [k, value]))
+  }
+  return { ...DEFAULT_NOTIFICATIONS, ...(value ?? {}) }
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   const location = ref(null) // { lat, lng, cityName }
   const calculationMethod = ref('MoonsightingCommittee')
   const madhab = ref('Shafi')
-  const notificationsEnabled = ref(false)
+  const notificationsEnabled = ref({ ...DEFAULT_NOTIFICATIONS }) // { fajr, dhuhr, asr, maghrib, isha }
 
   async function loadFromDB() {
     location.value = await getSetting('location')
@@ -14,7 +25,7 @@ export const useSettingsStore = defineStore('settings', () => {
     if (prefs) {
       calculationMethod.value = prefs.calculationMethod ?? 'MoonsightingCommittee'
       madhab.value = prefs.madhab ?? 'Shafi'
-      notificationsEnabled.value = prefs.notificationsEnabled ?? false
+      notificationsEnabled.value = normalizeNotifications(prefs.notificationsEnabled)
     }
   }
 
@@ -28,8 +39,15 @@ export const useSettingsStore = defineStore('settings', () => {
     await setSetting('preferences', {
       calculationMethod: calculationMethod.value,
       madhab: madhab.value,
-      notificationsEnabled: notificationsEnabled.value,
+      // Salin ke objek biasa — notificationsEnabled.value adalah reactive proxy
+      // Vue dan tidak bisa di-structured-clone oleh IndexedDB (DataCloneError)
+      notificationsEnabled: { ...notificationsEnabled.value },
     })
+  }
+
+  async function setNotificationEnabled(key, isEnabled) {
+    notificationsEnabled.value = { ...notificationsEnabled.value, [key]: isEnabled }
+    await savePreferences()
   }
 
   return {
@@ -40,5 +58,6 @@ export const useSettingsStore = defineStore('settings', () => {
     loadFromDB,
     saveLocation,
     savePreferences,
+    setNotificationEnabled,
   }
 })
