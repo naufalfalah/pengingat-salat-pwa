@@ -19,8 +19,9 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   async function saveLocation(lat, lng, cityName) {
-    location.value = { lat, lng, cityName, savedAt: Date.now() }
-    await setSetting('location', location.value)
+    const value = { lat, lng, cityName, savedAt: Date.now() }
+    await setSetting('location', value)
+    location.value = value
   }
 
   async function savePreferences() {
