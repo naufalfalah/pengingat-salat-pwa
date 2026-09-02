@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useSettingsStore } from '../stores/settings.js'
 import { requestNotificationPermission } from '../composables/useNotification.js'
 
-const props = defineProps({
+defineProps({
   prayers: { type: Array, default: () => [] },
   currentPrayer: { type: String, default: null },
 })

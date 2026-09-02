@@ -7,7 +7,7 @@ const props = defineProps({
   compassGranted: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['requestCompass'])
+defineEmits(['requestCompass'])
 
 // Titik tick marks di keliling kompas (36 titik, setiap 10°)
 const ticks = Array.from({ length: 36 }, (_, i) => {
